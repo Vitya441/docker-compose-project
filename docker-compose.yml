@@ -1,0 +1,32 @@
+#version: '3.1'
+
+# файлы докера будут в pg_demo у нас на пк?
+volumes:
+  pg_demo:
+
+services:
+  demo_db:
+#    скачали образ Postgres
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=vitya
+      - POSTGRES_PASSWORD=22817
+      - POSTGRES_DB=demo_db
+    volumes:
+      - pg_demo:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5433:5432"
+  app:
+    restart: always
+#    путь до докер файла (в той же директории)
+    build: .
+#    Докер контейнер (на порту 5433) содержит в себе базу, это не pgadmin
+    ports:
+      - "8080:8080"
+#    зависит от базы, она должна стартовать раньше
+    depends_on:
+      - demo_db
+    environment:
+#      база крутиться в докере(имя: demo_db), спринг будет брать данные там (перезатираем значение из app.properties)
+      SPRING_DATASOURCE_URL: 'jdbc:postgresql://demo_db:5432/demo_db'
